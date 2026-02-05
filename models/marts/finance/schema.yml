@@ -1,0 +1,62 @@
+version: 2
+
+models:
+  - name: fact_globepay__payments
+    description: >
+      One row per payment attempt processed via Globepay.
+      This fact table is built incrementally with a 2-day lookback window and
+      enriches payments with chargeback information.
+
+    columns:
+
+      - name: transaction_id
+        description: "Unique identifier for the payment transaction (Globepay external_ref)."
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Merchant order reference associated with the payment."
+
+      - name: created_at
+        description: "Timestamp when the payment was attempted."
+        tests:
+          - not_null
+
+      - name: country
+        description: "Two-letter ISO country code of the card."
+        tests:
+          - not_null
+
+      - name: currency
+        description: "Three-letter ISO currency code of the transaction."
+        tests:
+          - not_null
+
+      - name: amount
+        description: "Amount charged in the original transaction currency."
+        tests:
+          - not_null
+
+      - name: rate_usd
+        description: "USD exchange rate extracted from the Globepay rates JSON."
+        tests:
+          - not_null
+
+      - name: is_cvv_provided
+        description: "Flag indicating whether CVV was provided by the client."
+        tests:
+          - not_null
+
+      - name: is_accepted
+        description: "Boolean flag indicating an accepted transaction."
+        tests:
+          - not_null
+
+      - name: is_declined
+        description: "Boolean flag indicating a declined transaction."
+        tests:
+          - not_null
+
+      - name: is_chargeback
+        description: "Flag indicating whether the transaction was charged back. Null for transactions without chargeback information"
