@@ -1,0 +1,76 @@
+version: 2
+
+sources:
+  - name: main
+    tables:
+      - name: globepay_payments
+      - name: globepay_chargebacks
+
+models:
+  - name: stg_globepay__payments
+    description: "Staging model for Globepay payment transactions"
+    columns:
+      - name: transaction_id
+        description: "Unique transaction identifier from Globepay (external_ref)"
+        tests:
+          - not_null
+          - unique
+
+      - name: order_id
+        description: "Merchant order number (ref) associated with the payment"
+
+      - name: created_at
+        description: "Timestamp of the payment attempt"
+        tests:
+          - not_null
+
+      - name: created_date
+        description: "Date part of the transaction timestamp, truncated to day"
+
+      - name: country
+        description: "Two-character ISO country code of the card"
+
+      - name: currency
+        description: "Three-character ISO currency code for the transaction"
+
+      - name: state
+        description: "Transaction state (ACCEPTED / DECLINED)"
+        tests:
+          - accepted_values:
+              values: ["accepted", "declined"]
+
+      - name: amount
+        description: "Amount charged for the transaction"
+        tests:
+          - not_null
+
+      - name: is_cvv_provided
+        description: "Flag indicating if CVV was provided"
+
+      - name: is_accepted
+        description: "Flag indicating if transaction was accepted"
+
+      - name: is_declined
+        description: "Flag indicating if transaction was declined"
+
+      - name: rates
+        description: "JSON string of currency exchange rates used for settlement"
+      
+      - name: usd_rate
+        description: "USD exchange rate extracted from the rates JSON for the transaction"
+
+
+
+  - name: stg_globepay__chargebacks
+    description: "Staging model for Globepay chargeback data, cleaned and standardized"
+    columns:
+      - name: transaction_id
+        description: "Unique transaction identifier from Globepay (external_ref)"
+        tests:
+          - not_null
+          - unique
+
+      - name: is_chargeback
+        description: "Boolean flag indicating whether the transaction was charged back"
+        tests:
+          - not_null
