@@ -1,5 +1,8 @@
 # Globepay - DBT Project
 
+<img width="1044" height="199" alt="image" src="https://github.com/user-attachments/assets/271e47dc-b8f6-43f0-b59b-fd73c6fff3f4" />
+
+This project ingests and models payment and chargeback data from Globepay. It uses a staging → fact layer approach following dbt best practices, making it easier to analyze payment performance over time.
 
 ## Preliminary Data Exploration
 
@@ -26,6 +29,31 @@ Two CSV files were provided:
 
 **Data note:** `external_ref` is the transaction identifier linking both files.
 
+## Model architecture
+
+Followed this approach:
+
+1. Staging Layer (stg_)
+  - Cleans raw CSV data
+  - Standardizes column names and types
+  - Parses JSON columns like rates
+  - Staging models: stg_globepay__payments and stg_globepay__chargebacks
+
+2. Marts
+  - Joins and enriches staging tables
+  - Adds derived flags
+  - Supports incremental loads for cost optimization
+  - Fact model: fact_globepay__payments - this model was created to answer the 3 questions below
+
+The sources (.CSV files) were added to the data folder and populated in dbt as seeds.
+
+## Lineage graph
+
+CSV files → Staging tables (clean & standardize) → Fact table (enriched & analytics-ready)
+
+<img width="1122" height="383" alt="image" src="https://github.com/user-attachments/assets/62790284-a192-4756-a9e9-bc65b5626ce3" />
+
+
 ---
 
 
@@ -47,7 +75,7 @@ select
 from cte
 order by 1 desc
 ```
-<img width="1905" height="875" alt="image" src="https://github.com/user-attachments/assets/61aca240-29c3-4967-ab58-256154414b6b" />
+<img width="1905" height="875" alt="image" src="https://github.com/user-attachments/assets/58abb97f-491d-42a5-9bcf-ea73e07def79" />
 
 
 ### 2. List the countries where the amount of declined transactions went over $25M
@@ -66,7 +94,8 @@ from cte
 where total_amount_usd > 25000000
 ```
 
-<img width="397" height="65" alt="image" src="https://github.com/user-attachments/assets/a7d218e7-f1cc-41a6-9fae-a717a0b5c263" />
+<img width="397" height="65" alt="image" src="https://github.com/user-attachments/assets/b2b536fa-5c48-4ab0-b81f-0735d98c2ed2" />
+
 
 Countries that have an amount of declined transactions over 25M USD are: Canada (CA), United States of America (US) and United Arab Emirates (AE).
 
@@ -81,3 +110,4 @@ from fact_globepay__payments
 where is_chargeback is null
 ```
 Results: 0 rows. All transactions have chargeback information.
+
